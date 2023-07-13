@@ -35,6 +35,18 @@ const getUnreadEmails = async (gmail) => {
   }
 };
 
+const getEmailById = async (gmail, emailId) => {
+  try {
+    const res = await gmail.users.messages.get({
+      userId: "me",
+      id: emailId,
+    });
+    return res.data;
+  } catch (err) {
+    console.log("Error in fetching Email by ID ", err);
+  }
+};
+
 const createLabels = async (gmail, label) => {
   try {
     const res = await gmail.users.labels.create({
@@ -57,4 +69,30 @@ const createLabels = async (gmail, label) => {
     console.log("Error in creating Labels ", err);
   }
 };
-module.exports = { authentication, getUnreadEmails, createLabels };
+
+const sendReply = async (gmail, email, message, labelId) => {
+  try {
+    //Defining replyMsg object
+    const replyMsg = {
+      userId: "me",
+      resource: {
+        raw: Buffer.from(`To: ${email.payload.headers.find((header) => header.name === "From").value}\r\n` + `Subject: Re: ${email.payload.headers.find((header) => header.name === "Subject").value}\r\n` + `Content-Type: text/plain; charset="UTF-8"\r\n` + `Content-Transfer-Encoding: 7bit\r\n\r\n` + `${message}+\r\n`).toString("base64"),
+      },
+    };
+    //Sending Reply
+    await gmail.users.messages.send(replyMsg);
+
+    // Add Label and Move it to Autoresponder Label
+    await gmail.users.messages.modify({
+      userId: "me",
+      id: email.id,
+      resource: {
+        addLabelIds: [labelId],
+        removeLabelIds: ["INBOX"],
+      },
+    });
+  } catch (err) {
+    console.log("Error in Sending Reply ", err);
+  }
+};
+module.exports = { authentication, getUnreadEmails, createLabels, sendReply, getEmailById };
