@@ -1,10 +1,9 @@
 const express = require("express");
 const app = express();
 const PORT = 5000;
+const route = require("./Routes/routes");
 
-app.get("/", (req, res) => {
-  res.send("Welcome to openinAPP");
-});
+app.use("/", route);
 
 app.listen(PORT, (err) => {
   if (err) console.log(err);
