@@ -10,15 +10,15 @@ router.get("/", async (req, res) => {
 
     if (auth) {
       //If auth is not null
-      //Initialize gmail instance
+      //Initialize Gmail Instance
       const gmail = google.gmail({ version: "v1", auth });
 
       //Create Label | Parameter : gmail instance, label name
       const labelId = await createLabels(gmail, "Autoresponder");
 
-      //Repeat The Process after Random Interval
+      //Repeat The Process After Random Interval
       setInterval(async () => {
-        //Array of unread messages
+        //List of unread messages
         const messages = await getUnreadEmails(gmail);
 
         messages?.forEach(async (email) => {
@@ -27,11 +27,11 @@ router.get("/", async (req, res) => {
           //Fetch Email data
           const emailData = await getEmailById(gmail, id);
 
-          //Checking if email has been replied before or not
+          //Checking If Email Has Been Replied Before Or Not
           const isReplied = emailData.payload.headers.some((header) => header.name === "In-Reply-To");
 
           if (isReplied == false) {
-            //Template of reply message
+            //Template of Reply Message
             const reply = "Thank you for reaching out. I'm currently busy, but I'll get back to you via email soon.";
 
             //Send Reply
@@ -43,7 +43,7 @@ router.get("/", async (req, res) => {
   } catch (err) {
     console.log(err);
   }
-  res.send({ msg: "Welcome to world !" });
+  res.send({ msg: "Welcome to Gmail Autoresponder !" });
 });
 
 module.exports = router;

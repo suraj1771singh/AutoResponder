@@ -3,6 +3,7 @@ const app = express();
 const PORT = 5000;
 const route = require("./Routes/routes");
 
+//---MIDDLEWARE
 app.use("/", route);
 
 app.listen(PORT, (err) => {

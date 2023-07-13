@@ -1,9 +1,13 @@
 const path = require("path");
 const { authenticate } = require("@google-cloud/local-auth");
 
+//Setting credentials.json file Path
 const CREDENTIALS_PATH = path.join(process.cwd(), "credentials.json");
+
+//Defining Scopes Asked During Granting Permission
 const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.send", "https://www.googleapis.com/auth/gmail.labels", "https://mail.google.com/"];
 
+//---- Authentication User and Acessing Rights
 const authentication = async () => {
   try {
     const auth = await authenticate({
@@ -12,43 +16,57 @@ const authentication = async () => {
     });
     return auth;
   } catch (err) {
-    console.log(err);
+    console.log("Error in Authenticating User ", err);
   }
 };
 
+//---- Return Label ID on Passing Label Name
 const getUserLabelId = async (gmail, labelName) => {
   try {
+    //API request
     const res = await gmail.users.labels.list({ userId: "me" });
+
+    //Response List of Labels, Find Required Label by Checking With Label Name
     const label = res.data.labels.find((item) => item.name === labelName);
+
     return label?.id;
   } catch (err) {
     console.log("Error in fetching User Labels List ", err);
   }
 };
 
+//---- Return List of UnreadEmails
 const getUnreadEmails = async (gmail) => {
   try {
+    //API Request : Fetch List of Unread Emails
     const res = await gmail.users.messages.list({ userId: "me", labelIds: ["INBOX"], q: "is:unread" });
+
+    //Return List of Messages , If Null Return Empty List
     return res.data.messages || [];
   } catch (err) {
     console.log("Error in fetching Unread Emails ", err);
   }
 };
 
+//---- Return Email MetaData By Passing Email ID
 const getEmailById = async (gmail, emailId) => {
   try {
+    //API Request : Fetch Email Meta Data
     const res = await gmail.users.messages.get({
       userId: "me",
       id: emailId,
     });
+
     return res.data;
   } catch (err) {
     console.log("Error in fetching Email by ID ", err);
   }
 };
 
+//---- Create Labels and Return Label ID
 const createLabels = async (gmail, label) => {
   try {
+    //API Request : Create Label, Pass Label Name and Some Label Properties inside RequestBody
     const res = await gmail.users.labels.create({
       userId: "me",
       requestBody: {
@@ -57,6 +75,7 @@ const createLabels = async (gmail, label) => {
         messageListVisibility: "show",
       },
     });
+    // Return Label ID
     const id = res.data.id;
     return id;
   } catch (err) {
@@ -69,7 +88,7 @@ const createLabels = async (gmail, label) => {
     console.log("Error in creating Labels ", err);
   }
 };
-
+//---- Send Reply and Mark Email to Autoresponder Label
 const sendReply = async (gmail, email, message, labelId) => {
   try {
     //Defining replyMsg object
@@ -95,4 +114,6 @@ const sendReply = async (gmail, email, message, labelId) => {
     console.log("Error in Sending Reply ", err);
   }
 };
+
+//Export Functions
 module.exports = { authentication, getUnreadEmails, createLabels, sendReply, getEmailById };
