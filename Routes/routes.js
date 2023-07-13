@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { authentication } = require("../Utils/Functions");
+const { google } = require("googleapis");
+const { authentication, getUnreadEmails, createLabels } = require("../Utils/Functions");
 router.get("/", async (req, res) => {
   try {
     //Authenticating User
@@ -9,6 +10,13 @@ router.get("/", async (req, res) => {
       //If auth is not null
       //Initialize gmail instance
       const gmail = google.gmail({ version: "v1", auth });
+
+      //Array of unread messages
+      const messages = await getUnreadEmails(gmail);
+
+      //Create Label | Parameter : gmail instance, label name
+      const labelId = await createLabels(gmail, "Autoresponder");
+      console.log(labelId);
     }
   } catch (err) {
     console.log(err);
